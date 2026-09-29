@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediFlow — Hospital & Pharmacy Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F7F5;
+    --panel: #FFFFFF;
+    --ink: #14231F;
+    --ink-soft: #4C5B56;
+    --primary: #0B5D52;
+    --primary-ink: #FFFFFF;
+    --primary-light: #DCEEE9;
+    --amber: #C4691B;
+    --amber-light: #F6E4D3;
+    --danger: #A23B3B;
+    --danger-light: #F3DEDE;
+    --line: #DCE1DC;
+    --line-soft: #EBEEEA;
+    --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-head: 'IBM Plex Serif', Georgia, serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #10201B;
+      --panel: #16281F;
+      --ink: #EAF1EB;
+      --ink-soft: #A9BDB2;
+      --primary: #3FA891;
+      --primary-ink: #0A1A16;
+      --primary-light: #1E3A31;
+      --amber: #E0954F;
+      --amber-light: #3A2A18;
+      --danger: #E08080;
+      --danger-light: #3A2222;
+      --line: #26382F;
+      --line-soft: #1D2E26;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10201B;
+    --panel: #16281F;
+    --ink: #EAF1EB;
+    --ink-soft: #A9BDB2;
+    --primary: #3FA891;
+    --primary-ink: #0A1A16;
+    --primary-light: #1E3A31;
+    --amber: #E0954F;
+    --amber-light: #3A2A18;
+    --danger: #E08080;
+    --danger-light: #3A2222;
+    --line: #26382F;
+    --line-soft: #1D2E26;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+  h1, h2, h3 { font-family: var(--font-head); font-weight: 600; margin: 0; }
+  a { color: var(--primary); }
+
+  /* ---------- Login ---------- */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 40px 36px;
+  }
+  .login-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .login-mark .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--primary);
+  }
+  .login-mark span {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .login-card h1 { font-size: 22px; margin-bottom: 6px; }
+  .login-sub { color: var(--ink-soft); font-size: 14px; margin-bottom: 28px; }
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .role-btn {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .role-btn:hover { border-color: var(--primary); }
+  .role-btn.selected { border-color: var(--primary); background: var(--primary-light); }
+  .role-btn .role-icon { font-size: 20px; display: block; margin-bottom: 6px; }
+  .role-btn .role-label { font-size: 12.5px; font-weight: 500; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12.5px; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--panel);
+    color: var(--ink);
+  }
+  .field input:focus, button:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 11px;
+    background: var(--primary);
+    color: var(--primary-ink);
+    border: none;
+    border-radius: 3px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .btn-primary:hover { opacity: .92; }
+  .login-hint { font-size: 12px; color: var(--ink-soft); margin-top: 16px; text-align: center; }
+
+  /* ---------- App shell ---------- */
+  #app-screen { display: none; min-height: 100vh; }
+  #app-screen.active { display: flex; }
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 22px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .brand {
+    display: flex; align-items: center; gap: 9px;
+    padding: 0 6px 22px; border-bottom: 1px solid var(--line-soft); margin-bottom: 18px;
+  }
+  .sidebar .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
+  .sidebar .brand span { font-family: var(--font-head); font-weight: 600; font-size: 17px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 3px; cursor: pointer;
+    font-size: 14px; color: var(--ink-soft); margin-bottom: 2px;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--line-soft); color: var(--ink); }
+  .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+  .nav-icon { width: 18px; text-align: center; }
+  .sidebar-footer {
+    margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line-soft);
+  }
+  .user-chip { display: flex; align-items: center; gap: 9px; padding: 6px; }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light);
+    color: var(--primary); display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 600; }
+  .user-role { font-size: 11.5px; color: var(--ink-soft); }
+  .logout-link { font-size: 12px; color: var(--ink-soft); background: none; border: none; cursor: pointer; padding: 8px 6px 0; }
+  .logout-link:hover { color: var(--danger); }
+
+  .main {
+    flex: 1; padding: 28px 34px; max-width: 1080px; overflow-x: auto;
+  }
+  .main-header { margin-bottom: 22px; }
+  .main-header h1 { font-size: 22px; }
+  .main-header p { color: var(--ink-soft); font-size: 13.5px; margin-top: 4px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+    padding: 20px 22px; margin-bottom: 20px;
+  }
+  .panel h2 { font-size: 15px; margin-bottom: 4px; }
+  .panel .panel-sub { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px; }
+  .panel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 760px) { .panel-row { grid-template-columns: 1fr; } }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-weight: 600; color: var(--ink-soft); font-size: 12px; padding: 0 10px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 10px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
+  }
+  .badge-normal { background: var(--line-soft); color: var(--ink-soft); }
+  .badge-high { background: var(--amber-light); color: var(--amber); }
+  .badge-emergency { background: var(--danger-light); color: var(--danger); }
+  .badge-waiting { background: var(--line-soft); color: var(--ink-soft); }
+  .badge-progress { background: var(--primary-light); color: var(--primary); }
+  .badge-done { background: var(--primary-light); color: var(--primary); }
+  .badge-pending { background: var(--amber-light); color: var(--amber); }
+  .badge-dispensed { background: var(--primary-light); color: var(--primary); }
+
+  .btn { padding: 7px 13px; border-radius: 3px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; font-size: 13px; font-weight: 500; }
+  .btn:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-fill { background: var(--primary); color: var(--primary-ink); border: none; }
+  .btn-fill:hover { color: var(--primary-ink); opacity: .92; }
+  .btn-sm { padding: 5px 10px; font-size: 12.5px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .field-sm label { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
+  .field-sm input, .field-sm select, .field-sm textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); color: var(--ink);
+  }
+  .field-sm textarea { resize: vertical; min-height: 56px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 760px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 16px 18px; }
+  .stat-num { font-family: var(--font-head); font-size: 26px; font-weight: 600; }
+  .stat-label { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .stat-num.alert { color: var(--amber); }
+
+  .empty-state { text-align: center; padding: 32px 10px; color: var(--ink-soft); font-size: 13.5px; }
+  .toast {
+    position: fixed; bottom: 22px; right: 22px; background: var(--ink); color: var(--bg);
+    padding: 11px 18px; border-radius: 4px; font-size: 13.5px; opacity: 0; transform: translateY(8px);
+    transition: opacity .2s ease, transform .2s ease; pointer-events: none; z-index: 50; max-width: 320px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: var(--danger); color: #fff; }
+
+  .rx-item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .rx-item-row select, .rx-item-row input { flex: 1; }
+  .rx-item-row .qty { max-width: 70px; flex: none; }
+  .muted { color: var(--ink-soft); }
+  .mono { font-family: var(--font-mono); font-size: 12.5px; }
+  .section-divider { height: 1px; background: var(--line-soft); margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-mark"><span class="dot"></span><span>MediFlow</span></div>
+    <h1>Sign in</h1>
+    <div class="login-sub">Choose a role to explore its part of the patient workflow.</div>
+
+    <div class="role-grid" id="role-grid">
+      <div class="role-btn" data-role="RECEPTIONIST" data-user="reception1" data-name="Carol Reyes">
+        <span class="role-icon">🗂️</span><span class="role-label">Reception</span>
+      </div>
+      <div class="role-btn" data-role="DOCTOR" data-user="dr.manamela" data-name="Dr. Thandolwethu Manamela">
+        <span class="role-icon">🩺</span><span class="role-label">Doctor</span>
+      </div>
+      <div class="role-btn" data-role="PHARMACIST" data-user="pharm1" data-name="Azande Mnothoza">
+        <span class="role-icon">💊</span><span class="role-label">Pharmacist</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="login-username">Username</label>
+      <input id="login-username" type="text" readonly>
+    </div>
+    <div class="field">
+      <label for="login-password">Password</label>
+      <input id="login-password" type="password" value="••••••••" readonly>
+    </div>
+    <button class="btn-primary" id="login-btn" disabled>Select a role to continue</button>
+    <div class="login-hint">Demo data only — this runs entirely in your browser.</div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app-screen">
+  <div class="sidebar">
+    <div class="brand"><span class="dot"></span><span>MediFlow</span></div>
+    <nav id="nav-list"></nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">CR</div>
+        <div>
+          <div class="user-name" id="user-name">—</div>
+          <div class="user-role" id="user-role">—</div>
+        </div>
+      </div>
+      <button class="logout-link" id="logout-btn">Sign out</button>
+    </div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   MediFlow demo — in-browser simulation of the MVP workflow:
+   Login -> Patient -> Appointment -> Queue -> Consultation -> Prescription
+   -> Pharmacy -> Dispensing -> Inventory update.
+   All state lives in memory (no backend) and resets on reload.
+   ========================================================================= */
+
+let seq = { patient: 4, appt: 4, queue: 1, record: 1, rx: 1, disp: 1, inv: 5 };
+
+const state = {
+  currentUser: null,
+  patients: [
+    { id: 1, code: 'P-00001', name: 'Thabo Nkosi', dob: '1988-04-12', gender: 'Male', phone: '082 123 4567' },
+    { id: 2, code: 'P-00002', name: 'Sarah Adams', dob: '1995-11-02', gender: 'Female', phone: '073 123 4567' },
+    { id: 3, code: 'P-00003', name: 'Kagiso Molefe', dob: '1972-06-30', gender: 'Male', phone: '061 123 4567' },
+  ],
+  appointments: [
+    { id: 1, patientId: 1, doctor: 'Dr. Alice Smith', time: '09:00', reason: 'Persistent cough', status: 'SCHEDULED' },
+    { id: 2, patientId: 2, doctor: 'Dr. Alice Smith', time: '09:30', reason: 'Follow-up blood pressure', status: 'SCHEDULED' },
+    { id: 3, patientId: 3, doctor: 'Dr. Brian Jones', time: '10:00', reason: 'Routine checkup', status: 'SCHEDULED' },
+  ],
+  queue: [],
+  medicalRecords: [],
+  medicines: [
+    { id: 1, name: 'Amoxicillin 500mg', form: 'Capsule' },
+    { id: 2, name: 'Paracetamol 500mg', form: 'Tablet' },
+    { id: 3, name: 'Ibuprofen 200mg', form: 'Tablet' },
+    { id: 4, name: 'Amlodipine 5mg', form: 'Tablet' },
+  ],
+  inventory: [
+    { id: 1, medicineId: 1, batch: 'AMX-2026-01', qty: 120, min: 20, expiry: '2027-03-01' },
+    { id: 2, medicineId: 2, batch: 'PCM-2026-01', qty: 25, min: 20, expiry: '2026-12-01' },
+    { id: 3, medicineId: 3, batch: 'IBU-2025-05', qty: 45, min: 15, expiry: '2026-10-01' },
+    { id: 4, medicineId: 4, batch: 'AML-2026-02', qty: 60, min: 10, expiry: '2027-06-01' },
+  ],
+  prescriptions: [],
+  dispensing: [],
+};
+
+const ROLE_META = {
+  RECEPTIONIST: { label: 'Receptionist', initials: 'CR',
+    nav: [ ['patients', '🗂️', 'Patients'], ['appointments', '📅', 'Appointments'], ['checkin', '🎫', 'Check-in & Queue'] ] },
+  DOCTOR: { label: 'Doctor', initials: 'AS',
+    nav: [ ['queue', '🩺', "Today's Queue"], ['history', '📖', 'Patient History'] ] },
+  PHARMACIST: { label: 'Pharmacist', initials: 'DO',
+    nav: [ ['pharmacy', '💊', 'Prescriptions'], ['inventory', '📦', 'Inventory'] ] },
+};
+
+let currentTab = null;
+
+/* ---------- login ---------- */
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('login-username').value = btn.dataset.user;
+    document.getElementById('login-btn').disabled = false;
+    document.getElementById('login-btn').textContent = 'Sign in';
+    document.getElementById('login-btn').dataset.role = btn.dataset.role;
+    document.getElementById('login-btn').dataset.name = btn.dataset.name;
+  });
+});
+
+document.getElementById('login-btn').addEventListener('click', (e) => {
+  const role = e.target.dataset.role, name = e.target.dataset.name;
+  if (!role) return;
+  state.currentUser = { role, name, initials: ROLE_META[role].initials };
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').classList.add('active');
+  document.getElementById('user-name').textContent = name;
+  document.getElementById('user-role').textContent = ROLE_META[role].label;
+  document.getElementById('user-avatar').textContent = ROLE_META[role].initials;
+  buildNav();
+  navigate(ROLE_META[role].nav[0][0]);
+});
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  state.currentUser = null;
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('login-btn').disabled = true;
+  document.getElementById('login-btn').textContent = 'Select a role to continue';
+  document.getElementById('login-username').value = '';
+});
+
+function buildNav() {
+  const nav = document.getElementById('nav-list');
+  nav.innerHTML = '';
+  ROLE_META[state.currentUser.role].nav.forEach(([key, icon, label]) => {
+    const b = document.createElement('button');
+    b.className = 'nav-item';
+    b.dataset.tab = key;
+    b.innerHTML = `<span class="nav-icon">${icon}</span>${label}`;
+    b.addEventListener('click', () => navigate(key));
+    nav.appendChild(b);
+  });
+}
+
+function navigate(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
+  render();
+}
+
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function patientName(id) { const p = state.patients.find(p => p.id === id); return p ? p.name : '—'; }
+function medicineName(id) { const m = state.medicines.find(m => m.id === id); return m ? m.name : '—'; }
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function daysUntil(dateStr) { return Math.ceil((new Date(dateStr) - new Date(todayISO())) / 86400000); }
+
+/* priority ranking mirrors QueueEntry.compareTo in the Java service: EMERGENCY < HIGH < NORMAL */
+const PRIORITY_RANK = { EMERGENCY: 0, HIGH: 1, NORMAL: 2 };
+function sortedQueue() {
+  return [...state.queue].sort((a, b) => {
+    const r = PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
+    return r !== 0 ? r : a.queueNumber - b.queueNumber;
+  });
+}
+
+/* ---------- render router ---------- */
+function render() {
+  const main = document.getElementById('main');
+  const renderers = {
+    patients: renderPatients, appointments: renderAppointments, checkin: renderCheckin,
+    queue: renderDoctorQueue, history: renderHistory,
+    pharmacy: renderPharmacy, inventory: renderInventory,
+  };
+  main.innerHTML = '';
+  (renderers[currentTab] || renderPatients)(main);
+}
+
+function header(main, title, sub) {
+  const h = document.createElement('div');
+  h.className = 'main-header';
+  h.innerHTML = `<h1>${title}</h1><p>${sub}</p>`;
+  main.appendChild(h);
+}
+
+/* ================= RECEPTIONIST: Patients ================= */
+function renderPatients(main) {
+  header(main, 'Patients', 'Register new patients and look up existing records. Patient codes must be unique.');
+
+  const formPanel = document.createElement('div');
+  formPanel.className = 'panel';
+  formPanel.innerHTML = `
+    <h2>Register a patient</h2>
+    <div class="panel-sub">FR-02 — patient ID and details are validated before saving.</div>
+    <div class="form-grid">
+      <div class="field-sm"><label>Full name</label><input id="np-name" placeholder="e.g. Naledi Khumalo"></div>
+      <div class="field-sm"><label>Date of birth</label><input id="np-dob" type="date" max="${todayISO()}"></div>
+      <div class="field-sm"><label>Gender</label>
+        <select id="np-gender"><option>Female</option><option>Male</option><option>Other</option></select>
+      </div>
+      <div class="field-sm"><label>Phone</label><input id="np-phone" placeholder="082 000 0000"></div>
+    </div>
+    <button class="btn btn-fill" id="register-patient-btn" style="margin-top:14px;">Register patient</button>
+  `;
+  main.appendChild(formPanel);
+
+  formPanel.querySelector('#register-patient-btn').addEventListener('click', () => {
+    const name = formPanel.querySelector('#np-name').value.trim();
+    const dob = formPanel.querySelector('#np-dob').value;
+    const gender = formPanel.querySelector('#np-gender').value;
+    const phone = formPanel.querySelector('#np-phone').value.trim();
+    if (!name || !dob) { toast('Name and date of birth are required.', true); return; }
+    if (new Date(dob) > new Date(todayISO())) { toast('Date of birth cannot be in the future.', true); return; }
+    const code = 'P-' + String(seq.patient++).padStart(5, '0');
+    state.patients.push({ id: Date.now(), code, name, dob, gender, phone });
+    toast(`Registered ${name} (${code}).`);
+    render();
+  });
+
+  const listPanel = document.createElement('div');
+  listPanel.className = 'panel';
+  listPanel.innerHTML = `<h2>All patients</h2><div class="panel-sub">${state.patients.length} on file</div>`;
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr><th>Code</th><th>Name</th><th>DOB</th><th>Gender</th><th>Phone</th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  state.patients.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="mono">${p.code}</td><td>${p.name}</td><td>${p.dob}</td><td>${p.gender}</td><td>${p.phone || '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  listPanel.appendChild(table);
+  main.appendChild(listPanel);
+}
+
+/* ================= RECEPTIONIST: Appointments ================= */
+function renderAppointments(main) {
+  header(main, 'Appointments', 'Book appointments and track their status. A doctor cannot hold two appointments at once.');
+
+  const formPanel = document.createElement('div');
+  formPanel.className = 'panel';
+  formPanel.innerHTML = `
+    <h2>Book an appointment</h2>
+    <div class="form-grid">
+      <div class="field-sm"><label>Patient</label>
+        <select id="ap-patient">${state.patients.map(p => `<option value="${p.id}">${p.name} (${p.code})</option>`).join('')}</select>
+      </div>
+      <div class="field-sm"><label>Doctor</label>
+        <select id="ap-doctor"><option>Dr. Thandolwethu Manamela</option><option>Dr. Brian Jones</option></select>
+      </div>
+      <div class="field-sm"><label>Time</label><input id="ap-time" type="time" value="11:00"></div>
+      <div class="field-sm"><label>Reason</label><input id="ap-reason" placeholder="e.g. Follow-up"></div>
+    </div>
+    <button class="btn btn-fill" id="book-btn" style="margin-top:14px;">Book appointment</button>
+  `;
+  main.appendChild(formPanel);
+
+  formPanel.querySelector('#book-btn').addEventListener('click', () => {
+    const patientId = Number(formPanel.querySelector('#ap-patient').value);
+    const doctor = formPanel.querySelector('#ap-doctor').value;
+    const time = formPanel.querySelector('#ap-time').value;
+    const reason = formPanel.querySelector('#ap-reason').value.trim() || 'General consultation';
+    const conflict = state.appointments.some(a => a.doctor === doctor && a.time === time && a.status !== 'CANCELLED');
+    if (conflict) { toast(`${doctor} already has an appointment at ${time}.`, true); return; }
+    state.appointments.push({ id: seq.appt++, patientId, doctor, time, reason, status: 'SCHEDULED' });
+    toast('Appointment booked.');
+    render();
+  });
+
+  const listPanel = document.createElement('div');
+  listPanel.className = 'panel';
+  listPanel.innerHTML = `<h2>Today's appointments</h2>`;
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Reason</th><th>Status</th><th></th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  [...state.appointments].sort((a, b) => a.time.localeCompare(b.time)).forEach(a => {
+    const tr = document.createElement('tr');
+    const canCancel = a.status === 'SCHEDULED';
+    tr.innerHTML = `<td class="mono">${a.time}</td><td>${patientName(a.patientId)}</td><td>${a.doctor}</td><td>${a.reason}</td>
+      <td>${statusBadge(a.status)}</td>
+      <td>${canCancel ? `<button class="btn btn-sm" data-cancel="${a.id}">Cancel</button>` : ''}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  listPanel.appendChild(table);
+  main.appendChild(listPanel);
+
+  listPanel.querySelectorAll('[data-cancel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const a = state.appointments.find(a => a.id == btn.dataset.cancel);
+      a.status = 'CANCELLED';
+      toast('Appointment cancelled.');
+      render();
+    });
+  });
+}
+
+function statusBadge(status) {
+  const map = { SCHEDULED: 'badge-waiting', CHECKED_IN: 'badge-progress', CANCELLED: 'badge-emergency',
+    COMPLETED: 'badge-done', PENDING: 'badge-pending', DISPENSED: 'badge-dispensed' };
+  return `<span class="badge ${map[status] || 'badge-normal'}">${status.replace('_', ' ')}</span>`;
+}
+
+/* ================= RECEPTIONIST: Check-in & Queue ================= */
+function renderCheckin(main) {
+  header(main, 'Check-in & Queue', 'Check in a scheduled patient and assign them a queue priority. Cancelled appointments cannot be checked in.');
+
+  const scheduled = state.appointments.filter(a => a.status === 'SCHEDULED');
+  const formPanel = document.createElement('div');
+  formPanel.className = 'panel';
+  formPanel.innerHTML = `
+    <h2>Check in a patient</h2>
+    ${scheduled.length === 0 ? '<div class="empty-state">No scheduled appointments left to check in.</div>' : `
+    <div class="form-grid">
+      <div class="field-sm"><label>Appointment</label>
+        <select id="ci-appt">${scheduled.map(a => `<option value="${a.id}">${a.time} — ${patientName(a.patientId)} (${a.doctor})</option>`).join('')}</select>
+      </div>
+      <div class="field-sm"><label>Priority</label>
+        <select id="ci-priority"><option value="NORMAL">Normal</option><option value="HIGH">High priority</option><option value="EMERGENCY">Emergency</option></select>
+      </div>
+    </div>
+    <button class="btn btn-fill" id="checkin-btn" style="margin-top:14px;">Check in</button>`}
+  `;
+  main.appendChild(formPanel);
+
+  const btn = formPanel.querySelector('#checkin-btn');
+  if (btn) btn.addEventListener('click', () => {
+    const apptId = Number(formPanel.querySelector('#ci-appt').value);
+    const priority = formPanel.querySelector('#ci-priority').value;
+    const appt = state.appointments.find(a => a.id === apptId);
+    appt.status = 'CHECKED_IN';
+    state.queue.push({ id: seq.queue, patientId: appt.patientId, appointmentId: appt.id, priority, queueNumber: seq.queue, status: 'WAITING' });
+    seq.queue++;
+    toast(`${patientName(appt.patientId)} checked in — queue priority ${priority}.`);
+    render();
+  });
+
+  const qPanel = document.createElement('div');
+  qPanel.className = 'panel';
+  qPanel.innerHTML = `<h2>Live queue</h2><div class="panel-sub">Ordered by priority, then check-in order — same rule the doctor's PriorityQueue uses.</div>`;
+  qPanel.appendChild(queueTable(false));
+  main.appendChild(qPanel);
+}
+
+function queueTable(showCallControls) {
+  const waiting = sortedQueue();
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr><th>#</th><th>Patient</th><th>Priority</th><th>Status</th>${showCallControls ? '<th></th>' : ''}</tr></thead>`;
+  const tbody = document.createElement('tbody');
+  if (waiting.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">No one in the queue right now.</div></td></tr>`;
+  }
+  waiting.forEach(q => {
+    const pbadge = q.priority === 'EMERGENCY' ? 'badge-emergency' : q.priority === 'HIGH' ? 'badge-high' : 'badge-normal';
+    const sbadge = q.status === 'WAITING' ? 'badge-waiting' : q.status === 'IN_PROGRESS' ? 'badge-progress' : 'badge-done';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="mono">${q.queueNumber}</td><td>${patientName(q.patientId)}</td>
+      <td><span class="badge ${pbadge}">${q.priority}</span></td>
+      <td><span class="badge ${sbadge}">${q.status.replace('_',' ')}</span></td>
+      ${showCallControls ? `<td>${q.status === 'WAITING' ? '' : q.status === 'IN_PROGRESS' ? `<button class="btn btn-sm" data-consult="${q.id}">Start consultation</button>` : ''}</td>` : ''}`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  return table;
+}
+
+/* ================= DOCTOR: Queue + consultation ================= */
+function renderDoctorQueue(main) {
+  header(main, "Today's Queue", 'Call the next patient in priority order, then record their consultation and prescription.');
+
+  const stats = document.createElement('div');
+  stats.className = 'stat-row';
+  const waitingCount = state.queue.filter(q => q.status === 'WAITING').length;
+  const inProgress = state.queue.find(q => q.status === 'IN_PROGRESS');
+  stats.innerHTML = `
+    <div class="stat-card"><div class="stat-num">${waitingCount}</div><div class="stat-label">Waiting</div></div>
+    <div class="stat-card"><div class="stat-num">${state.queue.filter(q => q.status === 'DONE').length}</div><div class="stat-label">Seen today</div></div>
+    <div class="stat-card"><div class="stat-num">${state.prescriptions.length}</div><div class="stat-label">Prescriptions written</div></div>
+    <div class="stat-card"><div class="stat-num ${state.inventory.filter(i=>i.qty<=i.min).length ? 'alert' : ''}">${state.inventory.filter(i=>i.qty<=i.min).length}</div><div class="stat-label">Medicines low on stock</div></div>
+  `;
+  main.appendChild(stats);
+
+  const qPanel = document.createElement('div');
+  qPanel.className = 'panel';
+  qPanel.innerHTML = `<h2>Queue</h2><div class="panel-sub">A java.util.PriorityQueue orders EMERGENCY before HIGH before NORMAL, ties broken by check-in order.</div>`;
+  const callBtn = document.createElement('button');
+  callBtn.className = 'btn btn-fill btn-sm';
+  callBtn.textContent = 'Call next patient';
+  callBtn.style.marginBottom = '14px';
+  callBtn.disabled = waitingCount === 0 || !!inProgress;
+  callBtn.addEventListener('click', () => {
+    const next = sortedQueue().find(q => q.status === 'WAITING');
+    if (next) { next.status = 'IN_PROGRESS'; toast(`Now seeing ${patientName(next.patientId)}.`); render(); }
+  });
+  qPanel.appendChild(callBtn);
+  qPanel.appendChild(queueTable(true));
+  main.appendChild(qPanel);
+
+  if (inProgress) {
+    qPanel.querySelectorAll('[data-consult]').forEach(btn => {
+      btn.addEventListener('click', () => openConsultation(main, inProgress));
+    });
+  }
+}
+
+function openConsultation(main, queueEntry) {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  const patient = state.patients.find(p => p.id === queueEntry.patientId);
+  panel.innerHTML = `
+    <h2>Consultation — ${patient.name}</h2>
+    <div class="panel-sub">Record findings (FR-05), then write a prescription (FR-06) if needed.</div>
+    <div class="form-grid full">
+      <div class="field-sm"><label>Symptoms</label><textarea id="c-symptoms" placeholder="What the patient reports"></textarea></div>
+      <div class="field-sm"><label>Diagnosis</label><textarea id="c-diagnosis" placeholder="Clinical impression"></textarea></div>
+      <div class="field-sm"><label>Notes</label><textarea id="c-notes" placeholder="Follow-up plan, advice"></textarea></div>
+    </div>
+
+    <div class="section-divider"></div>
+    <h2>Prescription items</h2>
+    <div class="panel-sub">A prescription must contain at least one medicine item.</div>
+    <div id="rx-items"></div>
+    <button class="btn btn-sm" id="add-item-btn" style="margin-top:4px;">+ Add medicine</button>
+
+    <div class="section-divider"></div>
+    <button class="btn btn-fill" id="save-consult-btn">Save consultation & finish prescription</button>
+    <button class="btn btn-sm" id="save-noRx-btn" style="margin-left:8px;">Save consultation only</button>
+  `;
+  main.appendChild(panel);
+
+  const itemsWrap = panel.querySelector('#rx-items');
+  function addItemRow() {
+    const row = document.createElement('div');
+    row.className = 'rx-item-row';
+    row.innerHTML = `
+      <select class="rx-med">${state.medicines.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}</select>
+      <input class="rx-dosage" placeholder="Dosage, e.g. 500mg">
+      <input class="rx-freq" placeholder="Frequency, e.g. Twice daily">
+      <input class="rx-qty qty" type="number" min="1" value="10" placeholder="Qty">
+      <button class="btn btn-sm" data-remove-item>✕</button>
+    `;
+    row.querySelector('[data-remove-item]').addEventListener('click', () => row.remove());
+    itemsWrap.appendChild(row);
+  }
+  addItemRow();
+  panel.querySelector('#add-item-btn').addEventListener('click', addItemRow);
+
+  function saveRecord() {
+    const symptoms = panel.querySelector('#c-symptoms').value.trim();
+    const diagnosis = panel.querySelector('#c-diagnosis').value.trim();
+    const notes = panel.querySelector('#c-notes').value.trim();
+    const record = { id: seq.record++, patientId: patient.id, appointmentId: queueEntry.appointmentId, symptoms, diagnosis, notes, at: new Date() };
+    state.medicalRecords.push(record);
+    return record;
+  }
+
+  panel.querySelector('#save-noRx-btn').addEventListener('click', () => {
+    saveRecord();
+    queueEntry.status = 'DONE';
+    toast('Consultation saved.');
+    render();
+  });
+
+  panel.querySelector('#save-consult-btn').addEventListener('click', () => {
+    const rows = [...itemsWrap.querySelectorAll('.rx-item-row')];
+    const items = rows.map(r => ({
+      medicineId: Number(r.querySelector('.rx-med').value),
+      dosage: r.querySelector('.rx-dosage').value.trim() || '—',
+      frequency: r.querySelector('.rx-freq').value.trim() || '—',
+      qty: Number(r.querySelector('.rx-qty').value),
+    }));
+    if (items.length === 0 || items.some(i => !i.qty || i.qty <= 0)) {
+      toast('Every prescription item needs a quantity greater than zero.', true); return;
+    }
+    const record = saveRecord();
+    state.prescriptions.push({
+      id: seq.rx++, patientId: patient.id, doctor: state.currentUser.name, recordId: record.id,
+      items, status: 'PENDING', at: new Date(),
+    });
+    queueEntry.status = 'DONE';
+    toast(`Prescription created for ${patient.name}.`);
+    render();
+  });
+}
+
+/* ================= DOCTOR: Patient history ================= */
+function renderHistory(main) {
+  header(main, 'Patient History', 'Full medical record trail across visits.');
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  if (state.medicalRecords.length === 0) {
+    panel.innerHTML = `<h2>Medical records</h2><div class="empty-state">No consultations recorded yet — start one from Today's Queue.</div>`;
+  } else {
+    panel.innerHTML = `<h2>Medical records</h2>`;
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Patient</th><th>Symptoms</th><th>Diagnosis</th><th>Notes</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    [...state.medicalRecords].reverse().forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${patientName(r.patientId)}</td><td>${r.symptoms || '—'}</td><td>${r.diagnosis || '—'}</td><td>${r.notes || '—'}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    panel.appendChild(table);
+  }
+  main.appendChild(panel);
+}
+
+/* ================= PHARMACIST: Prescriptions / dispensing ================= */
+function renderPharmacy(main) {
+  header(main, 'Prescriptions', 'Dispense pending prescriptions. Stock cannot go negative and expired batches are skipped automatically.');
+
+  const pending = state.prescriptions.filter(p => p.status === 'PENDING');
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<h2>Awaiting dispensing</h2><div class="panel-sub">${pending.length} pending</div>`;
+
+  if (pending.length === 0) {
+    panel.innerHTML += `<div class="empty-state">Nothing pending — prescriptions written by doctors will appear here.</div>`;
+  } else {
+    pending.forEach(rx => {
+      const card = document.createElement('div');
+      card.style.cssText = 'border:1px solid var(--line); border-radius:3px; padding:14px 16px; margin-bottom:12px;';
+      const itemRows = rx.items.map(it => {
+        const stock = totalStock(it.medicineId);
+        const short = stock < it.qty;
+        return `<div style="display:flex; justify-content:space-between; font-size:13px; padding:4px 0;">
+          <span>${medicineName(it.medicineId)} — ${it.dosage}, ${it.frequency}, qty ${it.qty}</span>
+          <span class="${short ? '' : 'muted'}" style="color:${short ? 'var(--danger)' : ''}">${stock} in stock</span>
+        </div>`;
+      }).join('');
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <strong>${patientName(rx.patientId)}</strong>
+          <span class="muted" style="font-size:12px;">Prescribed by ${rx.doctor}</span>
+        </div>
+        <div style="margin:8px 0;">${itemRows}</div>
+        <button class="btn btn-fill btn-sm" data-dispense="${rx.id}">Dispense</button>
+      `;
+      panel.appendChild(card);
+    });
+  }
+  main.appendChild(panel);
+
+  panel.querySelectorAll('[data-dispense]').forEach(btn => {
+    btn.addEventListener('click', () => dispense(Number(btn.dataset.dispense)));
+  });
+
+  const logPanel = document.createElement('div');
+  logPanel.className = 'panel';
+  logPanel.innerHTML = `<h2>Dispensing log</h2>`;
+  if (state.dispensing.length === 0) {
+    logPanel.innerHTML += `<div class="empty-state">No dispensing recorded yet.</div>`;
+  } else {
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Patient</th><th>Items</th><th>Pharmacist</th><th>Status</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    [...state.dispensing].reverse().forEach(d => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${patientName(d.patientId)}</td><td>${d.items.map(i => `${medicineName(i.medicineId)} ×${i.qty}`).join(', ')}</td>
+        <td>${d.pharmacist}</td><td>${statusBadge('DISPENSED')}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    logPanel.appendChild(table);
+  }
+  main.appendChild(logPanel);
+}
+
+function totalStock(medicineId) {
+  return state.inventory.filter(i => i.medicineId === medicineId && daysUntil(i.expiry) >= 0)
+    .reduce((sum, i) => sum + i.qty, 0);
+}
+
+function dispense(rxId) {
+  const rx = state.prescriptions.find(r => r.id === rxId);
+  if (!rx) return;
+
+  // Business rules: stock can't go negative, dispense qty can't exceed available, expired batches excluded.
+  for (const item of rx.items) {
+    const available = totalStock(item.medicineId);
+    if (available < item.qty) {
+      toast(`Cannot dispense: only ${available} units of ${medicineName(item.medicineId)} available (need ${item.qty}).`, true);
+      return;
+    }
+  }
+
+  // FEFO: draw from the earliest-expiring non-expired batch first, mirroring PharmacyService.fulfillItem
+  const dispensedItems = [];
+  rx.items.forEach(item => {
+    let remaining = item.qty;
+    const batches = state.inventory
+      .filter(i => i.medicineId === item.medicineId && daysUntil(i.expiry) >= 0 && i.qty > 0)
+      .sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
+    for (const batch of batches) {
+      if (remaining <= 0) break;
+      const take = Math.min(remaining, batch.qty);
+      batch.qty -= take;
+      remaining -= take;
+    }
+    dispensedItems.push({ medicineId: item.medicineId, qty: item.qty });
+  });
+
+  rx.status = 'DISPENSED';
+  state.dispensing.push({ id: seq.disp++, prescriptionId: rx.id, patientId: rx.patientId, items: dispensedItems, pharmacist: state.currentUser.name, at: new Date() });
+  toast(`Dispensed to ${patientName(rx.patientId)}. Inventory updated.`);
+  render();
+}
+
+/* ================= PHARMACIST: Inventory ================= */
+function renderInventory(main) {
+  header(main, 'Inventory', 'Stock by batch, with low-stock and expiry alerts (FR-07).');
+
+  const low = state.inventory.filter(i => i.qty <= i.min);
+  const expSoon = state.inventory.filter(i => daysUntil(i.expiry) <= 30 && daysUntil(i.expiry) >= 0);
+  const expired = state.inventory.filter(i => daysUntil(i.expiry) < 0);
+
+  const stats = document.createElement('div');
+  stats.className = 'stat-row';
+  stats.innerHTML = `
+    <div class="stat-card"><div class="stat-num">${state.medicines.length}</div><div class="stat-label">Medicines tracked</div></div>
+    <div class="stat-card"><div class="stat-num ${low.length ? 'alert' : ''}">${low.length}</div><div class="stat-label">Low stock</div></div>
+    <div class="stat-card"><div class="stat-num ${expSoon.length ? 'alert' : ''}">${expSoon.length}</div><div class="stat-label">Expiring within 30 days</div></div>
+    <div class="stat-card"><div class="stat-num ${expired.length ? 'alert' : ''}">${expired.length}</div><div class="stat-label">Expired batches</div></div>
+  `;
+  main.appendChild(stats);
+
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<h2>Batches</h2>`;
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr><th>Medicine</th><th>Batch</th><th>Quantity</th><th>Min. stock</th><th>Expiry</th><th>Flag</th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  state.inventory.forEach(i => {
+    const dLeft = daysUntil(i.expiry);
+    let flag = '';
+    if (dLeft < 0) flag = `<span class="badge badge-emergency">Expired</span>`;
+    else if (dLeft <= 30) flag = `<span class="badge badge-high">Expiring soon</span>`;
+    else if (i.qty <= i.min) flag = `<span class="badge badge-high">Low stock</span>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${medicineName(i.medicineId)}</td><td class="mono">${i.batch}</td>
+      <td>${i.qty}</td><td class="muted">${i.min}</td><td>${i.expiry}</td><td>${flag}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  panel.appendChild(table);
+  main.appendChild(panel);
+}
+</script>
+</body>
+</html>
