@@ -1,4 +1,4 @@
-package com.mediflow;
+package com.mediflow.demo;
 
 import com.mediflow.controller.*;
 import com.mediflow.dao.*;
@@ -19,13 +19,8 @@ import java.util.List;
  * Runnable, end-to-end walk-through of the MVP workflow described in the design doc, section 20:
  *   Login -> Patient -> Appointment -> Queue -> Doctor consultation -> Prescription -> Pharmacy
  *   -> Dispensing -> Inventory update.
- *
- * Uses the H2 in-memory demo database (see DatabaseConnection) so it runs with zero external
- * setup. To point this at real MySQL instead: run database/schema.sql + seed.sql against your
- * MySQL server, then change DatabaseConnection.MODE to Mode.MYSQL and update the connection
- * details there.
  */
-public class Main {
+public class MediFlowDemo {
 
     public static void main(String[] args) throws Exception {
         loadDemoSchema();
@@ -147,7 +142,7 @@ public class Main {
         try (Connection conn = DatabaseConnection.getConnection();
              Statement st = conn.createStatement();
              BufferedReader reader = new BufferedReader(new InputStreamReader(
-                     Main.class.getResourceAsStream("/demo-schema.sql"), StandardCharsets.UTF_8))) {
+                     MediFlowDemo.class.getResourceAsStream("/demo-schema.sql"), StandardCharsets.UTF_8))) {
             StringBuilder sql = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {

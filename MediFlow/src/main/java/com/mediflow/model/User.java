@@ -1,18 +1,43 @@
 package com.mediflow.model;
 
+import jakarta.persistence.*;
+
 /** A login account for any staff member. Role drives which dashboard/actions are available. */
+@Entity
+@Table(name = "users")
 public class User {
-    public enum Role { ADMIN, DOCTOR, RECEPTIONIST, PHARMACIST }
-    public enum Status { ACTIVE, DISABLED }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Integer userId;
 
-    private int userId;
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
-    private String passwordHash;
-    private Role role;
-    private String fullName;
-    private String email;
-    private Status status = Status.ACTIVE;
 
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "email")
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Status status;
+
+    public enum Role {
+        ADMIN, DOCTOR, PHARMACIST, RECEPTIONIST
+    }
+
+    public enum Status {
+        ACTIVE, INACTIVE
+    }
     public User() {}
 
     public User(String username, String passwordHash, Role role, String fullName, String email) {
