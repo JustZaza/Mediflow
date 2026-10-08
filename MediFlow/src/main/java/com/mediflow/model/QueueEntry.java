@@ -33,18 +33,52 @@ public class QueueEntry implements Comparable<QueueEntry> {
         return Integer.compare(this.queueNumber, other.queueNumber);
     }
 
-    public int getQueueId() { return queueId; }
-    public void setQueueId(int queueId) { this.queueId = queueId; }
-    public int getPatientId() { return patientId; }
-    public void setPatientId(int patientId) { this.patientId = patientId; }
-    public int getAppointmentId() { return appointmentId; }
-    public void setAppointmentId(int appointmentId) { this.appointmentId = appointmentId; }
-    public Priority getPriority() { return priority; }
-    public void setPriority(Priority priority) { this.priority = priority; }
-    public int getQueueNumber() { return queueNumber; }
-    public void setQueueNumber(int queueNumber) { this.queueNumber = queueNumber; }
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
-    public String getPatientName() { return patientName; }
-    public void setPatientName(String patientName) { this.patientName = patientName; }
+    public int getQueueId() {
+        return queueId;
+    }
+    public void setQueueId(int queueId) {
+        this.queueId = queueId;
+    }
+
+    public int getPatientId() {
+        return patientId;
+    }
+    public void setPatientId(int patientId) {
+        this.patientId = patientId;
+    }
+
+    public int getAppointmentId() {
+        return appointmentId;
+    }
+    public void setAppointmentId(int appointmentId) {
+        this.appointmentId = appointmentId;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public int getQueueNumber() {
+        return queueNumber;
+    }
+    public void setQueueNumber(int queueNumber) {
+        this.queueNumber = queueNumber;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
 }

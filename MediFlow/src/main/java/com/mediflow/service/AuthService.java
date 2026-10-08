@@ -5,10 +5,12 @@ import com.mediflow.exception.AuthenticationException;
 import com.mediflow.model.User;
 import com.mediflow.util.PasswordUtil;
 import com.mediflow.util.ValidationUtil;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 /** FR-01: login, role identification, secure password handling. */
+@Service
 public class AuthService {
     private final UserDAO userDAO;
 
