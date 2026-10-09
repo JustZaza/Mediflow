@@ -73,8 +73,6 @@ These are enforced in the application and database logic:
    password = [your_password]
    ```
 
-   🔐 Do not commit real credentials to the repository.
-
 4. Run the application:
 
    ```bash
