@@ -4,12 +4,14 @@ import com.mediflow.database.DatabaseConnection;
 import com.mediflow.exception.DatabaseException;
 import com.mediflow.model.Prescription;
 import com.mediflow.model.PrescriptionItem;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class PrescriptionDAO {
 
     /** Inserts the prescription and all of its items as one transaction (business rule: at least one item). */

@@ -3,12 +3,14 @@ package com.mediflow.dao;
 import com.mediflow.database.DatabaseConnection;
 import com.mediflow.exception.DatabaseException;
 import com.mediflow.model.InventoryBatch;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class InventoryDAO {
 
     public InventoryBatch insert(InventoryBatch b) {
