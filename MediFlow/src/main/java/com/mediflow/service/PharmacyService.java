@@ -9,6 +9,7 @@ import com.mediflow.exception.ExpiredMedicineException;
 import com.mediflow.exception.InsufficientStockException;
 import com.mediflow.exception.InvalidPrescriptionException;
 import com.mediflow.model.*;
+import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,6 +26,7 @@ import java.util.Optional;
  *   - dispensing is performed as a single database transaction
  * Batches are consumed FEFO (first-expiry-first-out) across possibly multiple batches per item.
  */
+@Service
 public class PharmacyService {
     private final PrescriptionDAO prescriptionDAO;
     private final DispensingDAO dispensingDAO;

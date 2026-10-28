@@ -3,11 +3,13 @@ package com.mediflow.dao;
 import com.mediflow.database.DatabaseConnection;
 import com.mediflow.exception.DatabaseException;
 import com.mediflow.model.QueueEntry;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class QueueDAO {
 
     public QueueEntry insert(QueueEntry q) {
