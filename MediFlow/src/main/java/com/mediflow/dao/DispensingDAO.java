@@ -2,6 +2,7 @@ package com.mediflow.dao;
 
 import com.mediflow.model.Dispensing;
 import com.mediflow.model.DispensingItem;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 
@@ -10,6 +11,7 @@ import java.sql.*;
  * run as a single transaction together with the inventory deduction (business rule: "database
  * changes involved in dispensing should be performed as a transaction"). See PharmacyService.
  */
+@Repository
 public class DispensingDAO {
 
     public Dispensing insertHeader(Connection conn, Dispensing d) throws SQLException {

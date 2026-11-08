@@ -4,11 +4,13 @@ import com.mediflow.dao.PatientDAO;
 import com.mediflow.exception.DuplicatePatientException;
 import com.mediflow.model.Patient;
 import com.mediflow.util.ValidationUtil;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 /** FR-02: register, search, view, update patients. Enforces unique patient ID and DOB rules. */
+@Service
 public class PatientService {
     private final PatientDAO patientDAO;
 

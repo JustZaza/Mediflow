@@ -5,6 +5,7 @@ import com.mediflow.exception.InvalidPrescriptionException;
 import com.mediflow.model.Prescription;
 import com.mediflow.model.PrescriptionItem;
 import com.mediflow.model.User;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.Optional;
  * FR-06: doctors create prescriptions with one or more items.
  * Business rules enforced here: at least one item, and only DOCTOR-role users may prescribe.
  */
+@Service
 public class PrescriptionService {
     private final PrescriptionDAO prescriptionDAO;
 

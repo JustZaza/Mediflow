@@ -3,10 +3,12 @@ package com.mediflow.service;
 import com.mediflow.dao.MedicalRecordDAO;
 import com.mediflow.model.MedicalRecord;
 import com.mediflow.util.ValidationUtil;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /** FR-05: doctors record symptoms/diagnosis/notes tied to a patient + appointment. */
+@Service
 public class MedicalRecordService {
     private final MedicalRecordDAO medicalRecordDAO;
 

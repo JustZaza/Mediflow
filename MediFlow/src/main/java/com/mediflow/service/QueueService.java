@@ -2,6 +2,7 @@ package com.mediflow.service;
 
 import com.mediflow.dao.QueueDAO;
 import com.mediflow.model.QueueEntry;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.PriorityQueue;
@@ -12,6 +13,7 @@ import java.util.PriorityQueue;
  * priority level, earlier queue numbers (i.e. earlier check-in) go first — so the structure
  * gives correct "who's next" behavior with O(log n) insert/poll instead of a plain list scan.
  */
+@Service
 public class QueueService {
     private final QueueDAO queueDAO;
 

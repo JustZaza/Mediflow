@@ -3,12 +3,14 @@ package com.mediflow.dao;
 import com.mediflow.database.DatabaseConnection;
 import com.mediflow.exception.DatabaseException;
 import com.mediflow.model.Medicine;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class MedicineDAO {
 
     public Medicine insert(Medicine m) {

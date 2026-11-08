@@ -4,12 +4,14 @@ import com.mediflow.dao.AppointmentDAO;
 import com.mediflow.exception.InvalidAppointmentException;
 import com.mediflow.model.Appointment;
 import com.mediflow.util.ValidationUtil;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 /** FR-03: create/cancel/reschedule appointments. Enforces "no overlapping appointments per doctor". */
+@Service
 public class AppointmentService {
     private final AppointmentDAO appointmentDAO;
 
