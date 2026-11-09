@@ -2,6 +2,7 @@ package com.mediflow.service;
 
 import com.mediflow.dao.PatientDAO;
 import com.mediflow.exception.DuplicatePatientException;
+import com.mediflow.exception.PatientInUseException;
 import com.mediflow.model.Patient;
 import com.mediflow.util.ValidationUtil;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,16 @@ public class PatientService {
         ValidationUtil.requireNonBlank(patient.getFirstName(), "First name");
         ValidationUtil.requireNonBlank(patient.getLastName(), "Last name");
         patientDAO.update(patient);
+    }
+
+    public void delete(int patientId) {
+        if (patientDAO.findById(patientId).isEmpty()) {
+            throw new IllegalArgumentException("Patient not found");
+        }
+        if (patientDAO.hasLinkedRecords(patientId)) {
+            throw new PatientInUseException(
+                    "This patient has appointments or medical records and can't be deleted.");
+        }
+        patientDAO.delete(patientId);
     }
 }

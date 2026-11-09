@@ -113,6 +113,32 @@ public class PrescriptionDAO {
         return p;
     }
 
+    public List<Prescription> findAll() {
+        String sql = "SELECT * FROM prescriptions ORDER BY prescribed_at DESC";
+        String itemSql = "SELECT pi.*, m.name AS medicine_name FROM prescription_items pi " +
+                "JOIN medicines m ON m.medicine_id = pi.medicine_id";
+        List<Prescription> results = new ArrayList<>();
+        java.util.Map<Integer, Prescription> byId = new java.util.HashMap<>();
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+                while (rs.next()) {
+                    Prescription p = mapRow(rs);
+                    results.add(p);
+                    byId.put(p.getPrescriptionId(), p);
+                }
+            }
+            try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(itemSql)) {
+                while (rs.next()) {
+                    Prescription p = byId.get(rs.getInt("prescription_id"));
+                    if (p != null) p.addItem(mapItem(rs));
+                }
+            }
+            return results;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load prescriptions", e);
+        }
+    }
+
     private PrescriptionItem mapItem(ResultSet rs) throws SQLException {
         PrescriptionItem item = new PrescriptionItem();
         item.setItemId(rs.getInt("item_id"));

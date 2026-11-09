@@ -89,6 +89,62 @@ public class AppointmentDAO {
         }
     }
 
+    public List<Appointment> findByDate(java.time.LocalDate date) {
+        String sql = "SELECT * FROM appointments WHERE CAST(appointment_time AS DATE)=? ORDER BY appointment_time";
+        List<Appointment> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(date));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) results.add(mapRow(rs));
+            }
+            return results;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to list appointments for date", e);
+        }
+    }
+
+    /** Like hasConflict, but ignores the appointment being edited. */
+    public boolean hasConflictExcluding(int doctorId, LocalDateTime time, int excludeAppointmentId) {
+        String sql = "SELECT 1 FROM appointments WHERE doctor_id=? AND appointment_time=? " +
+                "AND appointment_id<>? AND status NOT IN ('CANCELLED','NO_SHOW')";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, doctorId);
+            ps.setTimestamp(2, Timestamp.valueOf(time));
+            ps.setInt(3, excludeAppointmentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check appointment conflicts", e);
+        }
+    }
+
+    public void update(int appointmentId, LocalDateTime time, String reason) {
+        String sql = "UPDATE appointments SET appointment_time=?, reason=? WHERE appointment_id=?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(time));
+            ps.setString(2, reason);
+            ps.setInt(3, appointmentId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update appointment", e);
+        }
+    }
+
+    public void delete(int appointmentId) {
+        String sql = "DELETE FROM appointments WHERE appointment_id=?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, appointmentId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to delete appointment", e);
+        }
+    }
+
     private Appointment mapRow(ResultSet rs) throws SQLException {
         Appointment a = new Appointment();
         a.setAppointmentId(rs.getInt("appointment_id"));
