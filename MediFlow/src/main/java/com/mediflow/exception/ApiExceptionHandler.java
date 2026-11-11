@@ -15,4 +15,8 @@ public class ApiExceptionHandler {
     ResponseEntity<Map<String, String>> conflict(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
     }
+    @ExceptionHandler(NotificationException.class)
+    ResponseEntity<Map<String, String>> mailFailed(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("error", e.getMessage()));
+    }
 }

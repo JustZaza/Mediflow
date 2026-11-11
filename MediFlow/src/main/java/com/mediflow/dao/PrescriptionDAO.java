@@ -139,6 +139,20 @@ public class PrescriptionDAO {
         }
     }
 
+    public Optional<Prescription> findByMedicalRecordId(int recordId) {
+        String sql = "SELECT prescription_id FROM prescriptions WHERE medical_record_id=?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, recordId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return Optional.empty();
+                return findById(rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load prescription for record", e);
+        }
+    }
+
     private PrescriptionItem mapItem(ResultSet rs) throws SQLException {
         PrescriptionItem item = new PrescriptionItem();
         item.setItemId(rs.getInt("item_id"));
