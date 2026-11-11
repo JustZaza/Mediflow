@@ -47,6 +47,19 @@ public class MedicalRecordDAO {
         }
     }
 
+    public List<MedicalRecord> findAll() {
+        String sql = "SELECT * FROM medical_records ORDER BY created_at DESC";
+        List<MedicalRecord> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) results.add(mapRow(rs));
+            return results;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load medical records", e);
+        }
+    }
+
     private MedicalRecord mapRow(ResultSet rs) throws SQLException {
         MedicalRecord r = new MedicalRecord();
         r.setRecordId(rs.getInt("record_id"));

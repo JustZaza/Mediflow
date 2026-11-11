@@ -61,4 +61,30 @@ public class AppointmentService {
         if (appt.isEmpty()) throw new InvalidAppointmentException("Appointment not found: " + appointmentId);
         return appt.get();
     }
+
+    public Appointment reschedule(int appointmentId, LocalDateTime time, String reason) {
+        Appointment appt = requireExisting(appointmentId);
+        if (appt.getStatus() != Appointment.Status.SCHEDULED) {
+            throw new InvalidAppointmentException("Only scheduled appointments can be changed");
+        }
+        // Only insist on a future time if the time is actually being changed, so the reason
+        // of an appointment earlier today can still be edited. The doctor stays the same.
+        boolean timeChanged = !time.equals(appt.getAppointmentTime());
+        if (timeChanged && time.isBefore(LocalDateTime.now().minusMinutes(1))) {
+            throw new InvalidAppointmentException("Appointment time must be in the future");
+        }
+        if (appointmentDAO.hasConflictExcluding(appt.getDoctorId(), time, appointmentId)) {
+            throw new InvalidAppointmentException("This doctor already has an appointment at that time");
+        }
+        appointmentDAO.update(appointmentId, time, reason);
+        return requireExisting(appointmentId);
+    }
+
+    public void delete(int appointmentId) {
+        Appointment appt = requireExisting(appointmentId);
+        if (appt.getStatus() != Appointment.Status.CANCELLED) {
+            throw new InvalidAppointmentException("Only cancelled appointments can be deleted. Cancel it first.");
+        }
+        appointmentDAO.delete(appointmentId);
+    }
 }

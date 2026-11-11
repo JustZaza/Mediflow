@@ -113,6 +113,20 @@ public class InventoryDAO {
         }
     }
 
+    public List<InventoryBatch> findAll() {
+        String sql = "SELECT i.*, m.name AS medicine_name FROM inventory i " +
+                "JOIN medicines m ON m.medicine_id = i.medicine_id ORDER BY m.name, i.expiry_date";
+        List<InventoryBatch> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) results.add(mapRow(rs));
+            return results;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load inventory", e);
+        }
+    }
+
     private InventoryBatch mapRow(ResultSet rs) throws SQLException {
         InventoryBatch b = new InventoryBatch();
         b.setInventoryId(rs.getInt("inventory_id"));

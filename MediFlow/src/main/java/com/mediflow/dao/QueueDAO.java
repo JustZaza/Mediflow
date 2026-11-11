@@ -70,6 +70,21 @@ public class QueueDAO {
         }
     }
 
+    public List<QueueEntry> findToday() {
+        String sql = "SELECT q.*, p.first_name, p.last_name FROM queues q " +
+                "JOIN patients p ON p.patient_id = q.patient_id " +
+                "WHERE CAST(q.created_at AS DATE) = CURRENT_DATE";
+        List<QueueEntry> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) results.add(mapRow(rs));
+            return results;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load today's queue", e);
+        }
+    }
+
     private QueueEntry mapRow(ResultSet rs) throws SQLException {
         QueueEntry q = new QueueEntry();
         q.setQueueId(rs.getInt("queue_id"));

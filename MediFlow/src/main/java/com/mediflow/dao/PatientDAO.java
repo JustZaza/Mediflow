@@ -102,6 +102,34 @@ public class PatientDAO {
         }
     }
 
+    /** True if anything still points at this patient (a delete would break foreign keys). */
+    public boolean hasLinkedRecords(int patientId) {
+        String sql = "SELECT (SELECT COUNT(*) FROM appointments    WHERE patient_id = ?) + " +
+                "       (SELECT COUNT(*) FROM medical_records WHERE patient_id = ?) + " +
+                "       (SELECT COUNT(*) FROM prescriptions   WHERE patient_id = ?) + " +
+                "       (SELECT COUNT(*) FROM queues          WHERE patient_id = ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 1; i <= 4; i++) ps.setInt(i, patientId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check patient records", e);
+        }
+    }
+
+    public void delete(int patientId) {
+        String sql = "DELETE FROM patients WHERE patient_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, patientId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to delete patient", e);
+        }
+    }
+
     private Patient mapRow(ResultSet rs) throws SQLException {
         Patient p = new Patient();
         p.setPatientId(rs.getInt("patient_id"));
