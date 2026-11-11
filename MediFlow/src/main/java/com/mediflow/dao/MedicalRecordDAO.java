@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class MedicalRecordDAO {
@@ -57,6 +58,19 @@ public class MedicalRecordDAO {
             return results;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to load medical records", e);
+        }
+    }
+
+    public Optional<MedicalRecord> findById(int recordId) {
+        String sql = "SELECT * FROM medical_records WHERE record_id=?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, recordId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load medical record", e);
         }
     }
 

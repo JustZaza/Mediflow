@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MediFlow — Hospital & Pharmacy Workflow</title>
+<title>MediFlow - Hospital & Pharmacy Workflow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -397,6 +397,7 @@ const ICONS = {
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  mail: '<path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   chevron: '<path d="M9 6l6 6-6 6"/>',
@@ -1370,6 +1371,27 @@ function openConsultation(main, queueEntry) {
   noRxBtn.addEventListener('click', () => submit(noRxBtn, false));
 }
 
+/* ================= DOCTOR: email notes + prescription to the patient ================= */
+function confirmEmailRecord(r) {
+  const pt = state.patients.find(p => p.id === r.patientId);
+  if (!pt || !pt.email) {
+    openModal({ title: 'No email address', confirmLabel: 'OK',
+      body: `<p><strong>${esc(patientName(r.patientId))}</strong> has no email address on file. Add one from the Patients page (receptionist), then try again.</p>`,
+      onConfirm: async () => {} });
+    return;
+  }
+  openModal({
+    title: 'Email to patient?', confirmLabel: 'Send email',
+    body: `<p>Send the consultation notes and any prescription to <strong>${esc(pt.name)}</strong> at</p>
+      <p style="margin:8px 0"><strong>${esc(pt.email)}</strong></p>
+      <p class="muted">Check the address is correct. Medical information is sensitive and can't be unsent.</p>`,
+    onConfirm: async () => {
+      await api(`/medical-records/${r.id}/email`, { method: 'POST' });
+      toast(`Email sent to ${pt.email}.`);
+    },
+  });
+}
+
 /* ================= DOCTOR: Patient history ================= */
 function renderHistory(main) {
   header(main, 'Patient History', 'Full medical record trail across visits.');
@@ -1378,11 +1400,15 @@ function renderHistory(main) {
   if (state.medicalRecords.length === 0) {
     p.insertAdjacentHTML('beforeend', emptyRow("No consultations recorded yet — start one from Today's Queue."));
   } else {
-    p.insertAdjacentHTML('beforeend', `<div class="table-wrap"><table><thead><tr><th>Patient</th><th>Symptoms</th><th>Diagnosis</th><th>Notes</th></tr></thead>
+    p.insertAdjacentHTML('beforeend', `<div class="table-wrap"><table><thead><tr><th>Patient</th><th>Symptoms</th><th>Diagnosis</th><th>Notes</th><th></th></tr></thead>
       <tbody>${[...state.medicalRecords].reverse().map(r => `<tr class="s-item" data-q="${q(patientName(r.patientId), r.symptoms, r.diagnosis, r.notes)}">
         <td><div class="who">${avatar(patientName(r.patientId), r.patientId)}<span class="who-name">${esc(patientName(r.patientId))}</span></div></td>
-        <td>${esc(r.symptoms || '—')}</td><td>${esc(r.diagnosis || '—')}</td><td>${esc(r.notes || '—')}</td></tr>`).join('')}</tbody></table></div>
+        <td>${esc(r.symptoms || '—')}</td><td>${esc(r.diagnosis || '—')}</td><td>${esc(r.notes || '—')}</td>
+        <td><button class="icon-btn" data-email="${r.id}" aria-label="Email notes and prescription to patient" title="Email to patient">${icon('mail')}</button></td></tr>`).join('')}</tbody></table></div>
       <div class="s-empty" hidden></div>`);
+    p.querySelectorAll('[data-email]').forEach(btn => {
+      btn.addEventListener('click', () => confirmEmailRecord(state.medicalRecords.find(r => String(r.id) === btn.dataset.email)));
+    });
   }
   main.appendChild(p);
 }
